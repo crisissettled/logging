@@ -15,7 +15,7 @@ IConfiguration configuration = new ConfigurationBuilder()
     .Build();
 
 var hostBuilder = Host.CreateDefaultBuilder(args)
-   .ConfigureAppConfiguration(configBuilder => configBuilder.AddJsonFile("appsettings.json", false, true))
+   //.ConfigureAppConfiguration(configBuilder => configBuilder.AddJsonFile("appsettings.json", false, true))
    .ConfigureLogging(logBuilder =>
         logBuilder.ClearProviders()
            .AddColorConsoleLogger(configuration => {
