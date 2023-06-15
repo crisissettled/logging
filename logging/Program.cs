@@ -1,6 +1,4 @@
 ﻿// See https://aka.ms/new-console-template for more information
-
-
 using logging.CustomLogging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,8 +6,16 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+
+IConfiguration configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: true)
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true)
+    .AddEnvironmentVariables()
+    .AddUserSecrets<Program>()
+    .Build();
+
 var hostBuilder = Host.CreateDefaultBuilder(args)
-   .ConfigureAppConfiguration(configBuilder => configBuilder.AddJsonFile("appsettings.json",false,true))
+   .ConfigureAppConfiguration(configBuilder => configBuilder.AddJsonFile("appsettings.json", false, true))
    .ConfigureLogging(logBuilder =>
         logBuilder.ClearProviders()
            .AddColorConsoleLogger(configuration => {
@@ -18,10 +24,14 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
                // Replace warning value from appsettings.json of "Red"
                configuration.LogLevelToColorMap[LogLevel.Error] = ConsoleColor.DarkRed;
            }))
-   .ConfigureServices((hostBuilderContext,services) => {
-       services.AddOptions().Configure<LoggingDatabase>(hostBuilderContext.Configuration.GetSection("LoggingDatabase"));
+   .ConfigureServices(services => {
+       services.AddOptions().Configure<LoggingDatabase>(configuration.GetSection("LoggingDatabase"));
        services.AddScoped<Test1>();
    });
+   //.ConfigureServices((hostBuilderContext,services) => {
+   //    services.AddOptions().Configure<LoggingDatabase>(hostBuilderContext.Configuration.GetSection("LoggingDatabase"));
+   //    services.AddScoped<Test1>();
+   //});
 
 
 using IHost host  = hostBuilder.Build();
