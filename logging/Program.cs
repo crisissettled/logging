@@ -19,23 +19,24 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
    //.ConfigureAppConfiguration(configBuilder => configBuilder.AddJsonFile("appsettings.json", false, true))
    .ConfigureLogging(logBuilder =>
         logBuilder.ClearProviders()
+           .AddConfiguration(configuration.GetSection("LoggingDatabase"))
            .AddColorConsoleLogger(configuration => {
                // Replace warning value from appsettings.json of "Cyan"
-               configuration.LogLevelToColorMap[LogLevel.Warning] = ConsoleColor.DarkCyan;
+               //configuration.LogLevelToColorMap[LogLevel.Warning] = ConsoleColor.DarkCyan;
                // Replace warning value from appsettings.json of "Red"
-               configuration.LogLevelToColorMap[LogLevel.Error] = ConsoleColor.DarkRed;
+               //configuration.LogLevelToColorMap[LogLevel.Error] = ConsoleColor.DarkRed;
            }))
    .ConfigureServices(services => {
        services.AddOptions().Configure<LoggingDatabase>(configuration.GetSection("LoggingDatabase"));
        services.AddScoped<Test1>();
    });
-   //.ConfigureServices((hostBuilderContext,services) => {
-   //    services.AddOptions().Configure<LoggingDatabase>(hostBuilderContext.Configuration.GetSection("LoggingDatabase"));
-   //    services.AddScoped<Test1>();
-   //});
+//.ConfigureServices((hostBuilderContext,services) => {
+//    services.AddOptions().Configure<LoggingDatabase>(hostBuilderContext.Configuration.GetSection("LoggingDatabase"));
+//    services.AddScoped<Test1>();
+//});
 
 
-using IHost host  = hostBuilder.Build();
+using IHost host = hostBuilder.Build();
 
 
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
@@ -83,7 +84,7 @@ await host.RunAsync();
 
 
 class LoggingDatabase {
-    public string? DbName { get; set; } 
+    public string? DbName { get; set; }
     public int Port { get; set; }
     public string? UserName { get; set; }
 }
@@ -111,7 +112,7 @@ internal class Test1 {
 
         Console.WriteLine(this.loggingDatabaseOptions.CurrentValue.DbName + " in Test1 constructor");
 
-       
+
     }
 
     public IOptionsMonitor<LoggingDatabase> Options { get; }
