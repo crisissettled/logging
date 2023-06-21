@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace logging.CustomLogging {
 
     [UnsupportedOSPlatform("browser")]
-    [ProviderAlias("ColorConsole")]
+    //[ProviderAlias("ColorConsole")]
     public sealed class ColorConsoleLoggerProvider : ILoggerProvider {
         private readonly IDisposable? _onChangeToken;
         private ColorConsoleLoggerConfiguration _currentConfig;

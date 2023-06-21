@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+ 
 
 Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") + ", " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") + " - DOTNET_ENVIRONMENT, ASPNETCORE_ENVIRONMENT");
 
@@ -19,12 +20,13 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
    //.ConfigureAppConfiguration(configBuilder => configBuilder.AddJsonFile("appsettings.json", false, true))
    .ConfigureLogging(logBuilder =>
         logBuilder.ClearProviders()
-           .AddConfiguration(configuration.GetSection("LoggingDatabase"))
-           .AddColorConsoleLogger(configuration => {
+           //.AddConfiguration(configuration.GetSection("LoggingDatabase"))
+           .AddColorConsoleLogger(config => {
                // Replace warning value from appsettings.json of "Cyan"
                //configuration.LogLevelToColorMap[LogLevel.Warning] = ConsoleColor.DarkCyan;
                // Replace warning value from appsettings.json of "Red"
                //configuration.LogLevelToColorMap[LogLevel.Error] = ConsoleColor.DarkRed;
+               configuration.GetSection("LoggingDatabase").Bind(config);
            }))
    .ConfigureServices(services => {
        services.AddOptions().Configure<LoggingDatabase>(configuration.GetSection("LoggingDatabase"));

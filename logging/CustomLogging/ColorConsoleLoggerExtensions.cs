@@ -11,11 +11,11 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace logging.CustomLogging {
     public static class ColorConsoleLoggerExtensions {
         public static ILoggingBuilder AddColorConsoleLogger(this ILoggingBuilder builder) {
-            builder.AddConfiguration();
+            //builder.AddConfiguration();
 
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, ColorConsoleLoggerProvider>());
 
-            LoggerProviderOptions.RegisterProviderOptions<ColorConsoleLoggerConfiguration, ColorConsoleLoggerProvider>(builder.Services);
+            //LoggerProviderOptions.RegisterProviderOptions<ColorConsoleLoggerConfiguration, ColorConsoleLoggerProvider>(builder.Services);
 
             return builder;
         }
