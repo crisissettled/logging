@@ -13,22 +13,27 @@ namespace logging.CustomLogging {
     [UnsupportedOSPlatform("browser")]
     //[ProviderAlias("ColorConsole")]
     public sealed class ColorConsoleLoggerProvider : ILoggerProvider {
-        private readonly IDisposable? _onChangeToken;
-        private ColorConsoleLoggerConfiguration _currentConfig;
+        private readonly IDisposable? _onConfigChange;
+        private ColorConsoleLoggerConfiguration _config;
         private readonly ConcurrentDictionary<string, ColorConsoleLogger> _loggers = new(StringComparer.OrdinalIgnoreCase);
 
         public ColorConsoleLoggerProvider(IOptionsMonitor<ColorConsoleLoggerConfiguration> config) {
-            _currentConfig = config.CurrentValue;
-            _onChangeToken = config.OnChange(updatedConfig => _currentConfig = updatedConfig);
+            _config = config.CurrentValue;
+            _onConfigChange = config.OnChange(updatedConfig => _config = updatedConfig);
         }
 
-        public ILogger CreateLogger(string categoryName) => _loggers.GetOrAdd(categoryName, name => new ColorConsoleLogger(name, GetCurrentConfig));
+        public ILogger CreateLogger(string categoryName) => 
+            _loggers.GetOrAdd(categoryName,
+                categoryName => {
+                    return new ColorConsoleLogger(categoryName, GetCurrentConfig);
+            });
 
-        private ColorConsoleLoggerConfiguration GetCurrentConfig() => _currentConfig;
+
+        private ColorConsoleLoggerConfiguration GetCurrentConfig() => _config;
 
         public void Dispose() {
             _loggers.Clear();
-            _onChangeToken?.Dispose();
+            _onConfigChange?.Dispose();
         }
     }
 }
