@@ -16,7 +16,7 @@ namespace logging.CustomLogging {
         public Dictionary<LogLevel, ConsoleColor> LogLevelToColorMap { get; set; } = new() {
             [LogLevel.Information] = ConsoleColor.Green,
             [LogLevel.Warning] = ConsoleColor.Yellow,
-            [LogLevel.Error] = ConsoleColor.Cyan
+            [LogLevel.Error] = ConsoleColor.Red
         };
     }
 }

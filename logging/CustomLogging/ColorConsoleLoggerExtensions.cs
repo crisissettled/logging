@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Configuration;
 
 namespace logging.CustomLogging {
     public static class ColorConsoleLoggerExtensions {
@@ -20,9 +21,9 @@ namespace logging.CustomLogging {
             return builder;
         }
 
-        public static ILoggingBuilder AddColorConsoleLogger(this ILoggingBuilder builder, Action<ColorConsoleLoggerConfiguration> configure) {
+        public static ILoggingBuilder AddColorConsoleLogger(this ILoggingBuilder builder, IConfiguration config) {
             builder.AddColorConsoleLogger();
-            builder.Services.Configure(configure);
+            builder.Services.Configure<ColorConsoleLoggerConfiguration>(config);
 
             return builder;
         }

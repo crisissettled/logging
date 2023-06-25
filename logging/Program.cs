@@ -5,12 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
- 
+using Microsoft.VisualBasic;
 
 Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") + ", " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") + " - DOTNET_ENVIRONMENT, ASPNETCORE_ENVIRONMENT");
 
 IConfiguration configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json", optional: true)
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true)
     .AddEnvironmentVariables()
     .AddUserSecrets<Program>()
@@ -21,13 +21,8 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
    .ConfigureLogging(logBuilder =>
         logBuilder.ClearProviders()
            //.AddConfiguration(configuration.GetSection("LoggingDatabase"))
-           .AddColorConsoleLogger(config => {
-               // Replace warning value from appsettings.json of "Cyan"
-               //configuration.LogLevelToColorMap[LogLevel.Warning] = ConsoleColor.DarkCyan;
-               // Replace warning value from appsettings.json of "Red"
-               //configuration.LogLevelToColorMap[LogLevel.Error] = ConsoleColor.DarkRed;
-               configuration.GetSection("LoggingDatabase").Bind(config);
-           }))
+                  .AddColorConsoleLogger(configuration.GetSection("LoggingDatabase"))
+    )
    .ConfigureServices(services => {
        services.AddOptions().Configure<LoggingDatabase>(configuration.GetSection("LoggingDatabase"));
        services.AddScoped<Test1>();
@@ -51,7 +46,10 @@ logger.LogTrace(5, "== 120.");                    // Not logged
 
 
 var test1 = host.Services.GetRequiredService<Test1>();
-test1.Test();
+while (true) {
+    test1.Test();
+    await Task.Delay(1000);
+}
 
 await host.RunAsync();
 
