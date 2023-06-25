@@ -9,9 +9,11 @@ using Microsoft.VisualBasic;
 
 Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") + ", " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") + " - DOTNET_ENVIRONMENT, ASPNETCORE_ENVIRONMENT");
 
+var ENV_NAME = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "production";
+
 IConfiguration configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{ENV_NAME}.json", optional: true)
     .AddEnvironmentVariables()
     .AddUserSecrets<Program>()
     .Build();
