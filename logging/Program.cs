@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic;
+using MongoDbLogging;
 
 Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") + ", " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") + " - DOTNET_ENVIRONMENT, ASPNETCORE_ENVIRONMENT");
 
@@ -24,6 +25,8 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
         logBuilder.ClearProviders()
            //.AddConfiguration(configuration.GetSection("LoggingDatabase"))
                   .AddColorConsoleLogger(configuration.GetSection("LoggingDatabase"))
+                  .AddMongoDbLogger(configuration.GetSection("MongoDbLogging"))
+
     )
    .ConfigureServices(services => {
        services.AddOptions().Configure<LoggingDatabase>(configuration.GetSection("LoggingDatabase"));

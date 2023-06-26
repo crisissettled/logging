@@ -1,9 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
+using MongoDB.Driver;
+
+
 
 namespace MongoDbLogging {
     internal sealed class MongoDbLogger : ILogger {
-        private readonly object _getCurrentConfig;
-        private readonly object _name;
+        private readonly Func<MongoDbLoggerConfiguration> _getCurrentConfig;
+        private readonly string _name;
 
         public MongoDbLogger(string name, Func<MongoDbLoggerConfiguration> getCurrentConfig) {
             (_name, _getCurrentConfig) = (name, getCurrentConfig);
@@ -17,7 +21,19 @@ namespace MongoDbLogging {
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
-            throw new NotImplementedException();
+            if (!IsEnabled(logLevel)) return;
+
+            var config = _getCurrentConfig();
+            var dbClient = new MongoClient(config.connectionUri);
+
+            var db = dbClient.GetDatabase("logging");
+            var collection = db.GetCollection<LoggingObject>("console_logging");
+            var loggingObject = new LoggingObject(_name, $"Testing  {DateTime.Now.ToShortTimeString()}");
+            collection.InsertOne(loggingObject);
         }
     }
 }
+
+
+internal record LoggingObject (string Name, string Message);
+ 

@@ -2,24 +2,25 @@
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 
-
 namespace MongoDbLogging {
     internal sealed class MongoDbLoggerProvider : ILoggerProvider {
-        private IOptionsSnapshot<MongoDbLoggerConfiguration> _config;
+        private  MongoDbLoggerConfiguration _config;
         private readonly ConcurrentDictionary<string, MongoDbLogger> _loggers = new(StringComparer.OrdinalIgnoreCase);
-
-        public MongoDbLoggerProvider(IOptionsSnapshot<MongoDbLoggerConfiguration> config) {
-            this._config = config;
+        private readonly IDisposable? _onConfigChange;
+        public MongoDbLoggerProvider(IOptionsMonitor<MongoDbLoggerConfiguration> config) {
+            this._config = config.CurrentValue;
+            this._onConfigChange = config.OnChange(updatedConfig => this._config = updatedConfig);
          }
 
         public ILogger CreateLogger(string categoryName) {
             return _loggers.GetOrAdd(categoryName, (categoryName) => new MongoDbLogger(categoryName, GetCurrentConfig));
         }
 
-        private MongoDbLoggerConfiguration GetCurrentConfig() => _config.Value;
+        private MongoDbLoggerConfiguration GetCurrentConfig() => _config;
 
         public void Dispose() {
-            _loggers.Clear(); 
+            _loggers.Clear();
+            _onConfigChange?.Dispose();
         }        
     }
 }
