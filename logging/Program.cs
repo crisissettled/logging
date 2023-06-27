@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using logging.CustomLogging;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic;
 using MongoDbLogging;
+using System.Text.Json;
 
 Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") + ", " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") + " - DOTNET_ENVIRONMENT, ASPNETCORE_ENVIRONMENT");
 
@@ -26,13 +28,17 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
         logBuilder.ClearProviders()
            //.AddConfiguration(configuration.GetSection("LoggingDatabase"))
                   .AddColorConsoleLogger(configuration.GetSection("LoggingDatabase"))
-                  .AddMongoDbLogger(configuration.GetSection("MongoDbLogging"),ENV_NAME,"logging_test")
+                  //.AddMongoDbLogger(configuration.GetSection("MongoDbLogging"),ENV_NAME,"logging_test")
 
     )
    .ConfigureServices(services => {
-       services.AddOptions().Configure<LoggingDatabase>(configuration.GetSection("LoggingDatabase"));
-       services.AddScoped<Test1>();
-       services.AddMemoryCache();       
+       services.AddOptions().Configure<LoggingDatabase>(configuration.GetSection("LoggingDatabase"))
+               .AddScoped<Test1>()
+               .AddMemoryCache()
+               .AddStackExchangeRedisCache(opts => {
+                   opts.Configuration = "localhost";
+                   opts.InstanceName = "logging_";               
+               });
    });
 //.ConfigureServices((hostBuilderContext,services) => {
 //    services.AddOptions().Configure<LoggingDatabase>(hostBuilderContext.Configuration.GetSection("LoggingDatabase"));
@@ -54,10 +60,29 @@ logger.LogTrace(5, "== 120.");                    // Not logged
 var test1 = host.Services.GetRequiredService<Test1>();
 
 var mc1 = host.Services.GetRequiredService<IMemoryCache>();
-var str = await mc1.GetOrCreateAsync<string>("connectionstr", (e) => {
-    return Task.FromResult("localhost:27017");
-});
+var redisCache = host.Services.GetRequiredService<IDistributedCache>();
+
 while (true) {
+    var str = await mc1.GetOrCreateAsync<string>("connectionstr", (e) => {
+        e.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(2);
+        return Task.FromResult("localhost:27017 - " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+    });
+
+
+    var str2 = await redisCache.GetStringAsync("conStr");
+    var s1 = "not found";
+    if (str2 == null) {
+        s1 = "redis cache - " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        var opts = new DistributedCacheEntryOptions();
+        opts.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(20);
+        await redisCache.SetStringAsync("conStr", s1, opts);
+    }
+    else {
+        s1 = str2;
+    }
+   
+
+    Console.WriteLine($"string value: {str}, ---- {s1}");
     test1.Test();
     await Task.Delay(1000);
 }
