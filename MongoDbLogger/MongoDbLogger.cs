@@ -25,7 +25,7 @@ namespace MongoDbLogging {
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
             if (!IsEnabled(logLevel)) return;
             
-            var loggingEntity = new MongoDbLoggingEntity(_environment,_serviceName,logLevel.ToString(), _name, $"{formatter(state, exception)}");
+            var loggingEntity = new MongoDbLoggingEntity(_environment,_serviceName,logLevel.ToString(), _name, $"{formatter(state, exception)}", DateTime.Now);
             InserLoggingToMongoDb(loggingEntity);
         }
 
