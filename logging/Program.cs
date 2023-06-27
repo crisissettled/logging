@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using logging.CustomLogging;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,18 +26,18 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
         logBuilder.ClearProviders()
            //.AddConfiguration(configuration.GetSection("LoggingDatabase"))
                   .AddColorConsoleLogger(configuration.GetSection("LoggingDatabase"))
-                  .AddMongoDbLogger(configuration.GetSection("MongoDbLogging"))
+                  .AddMongoDbLogger(configuration.GetSection("MongoDbLogging"),ENV_NAME,"logging_test")
 
     )
    .ConfigureServices(services => {
        services.AddOptions().Configure<LoggingDatabase>(configuration.GetSection("LoggingDatabase"));
        services.AddScoped<Test1>();
+       services.AddMemoryCache();       
    });
 //.ConfigureServices((hostBuilderContext,services) => {
 //    services.AddOptions().Configure<LoggingDatabase>(hostBuilderContext.Configuration.GetSection("LoggingDatabase"));
 //    services.AddScoped<Test1>();
-//});
-
+ 
 
 using IHost host = hostBuilder.Build();
 
@@ -51,6 +52,11 @@ logger.LogTrace(5, "== 120.");                    // Not logged
 
 
 var test1 = host.Services.GetRequiredService<Test1>();
+
+var mc1 = host.Services.GetRequiredService<IMemoryCache>();
+var str = await mc1.GetOrCreateAsync<string>("connectionstr", (e) => {
+    return Task.FromResult("localhost:27017");
+});
 while (true) {
     test1.Test();
     await Task.Delay(1000);

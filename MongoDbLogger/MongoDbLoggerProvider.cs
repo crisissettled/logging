@@ -7,13 +7,18 @@ namespace MongoDbLogging {
         private  MongoDbLoggerConfiguration _config;
         private readonly ConcurrentDictionary<string, MongoDbLogger> _loggers = new(StringComparer.OrdinalIgnoreCase);
         private readonly IDisposable? _onConfigChange;
-        public MongoDbLoggerProvider(IOptionsMonitor<MongoDbLoggerConfiguration> config) {
+        private readonly string _environment;
+        private readonly string _serviceName;
+
+        public MongoDbLoggerProvider(IOptionsMonitor<MongoDbLoggerConfiguration> config, ServiceInfo serviceInfo) {
             this._config = config.CurrentValue;
             this._onConfigChange = config.OnChange(updatedConfig => this._config = updatedConfig);
-         }
+            this._environment = serviceInfo.Environment;
+            this._serviceName = serviceInfo.ServiceName;
+        }
 
         public ILogger CreateLogger(string categoryName) {
-            return _loggers.GetOrAdd(categoryName, (categoryName) => new MongoDbLogger(categoryName, GetCurrentConfig));
+            return _loggers.GetOrAdd(categoryName, (categoryName) => new MongoDbLogger(_environment,_serviceName, categoryName, GetCurrentConfig));
         }
 
         private MongoDbLoggerConfiguration GetCurrentConfig() => _config;
