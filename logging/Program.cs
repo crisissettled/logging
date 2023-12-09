@@ -26,9 +26,9 @@ var hostBuilder = Host.CreateDefaultBuilder(args)
    //.ConfigureAppConfiguration(configBuilder => configBuilder.AddJsonFile("appsettings.json", false, true))
    .ConfigureLogging(logBuilder =>
         logBuilder.ClearProviders()
-           //.AddConfiguration(configuration.GetSection("LoggingDatabase"))
-                  .AddColorConsoleLogger(configuration.GetSection("LoggingDatabase"))
-                  //.AddMongoDbLogger(configuration.GetSection("MongoDbLogging"),ENV_NAME,"logging_test")
+                  //.AddConfiguration(configuration.GetSection("LoggingDatabase"))
+                  //.AddColorConsoleLogger(configuration.GetSection("MongoDbLogging"))
+                  .AddMongoDbLogger(configuration.GetSection("MongoDbLogging"),ENV_NAME,"logging_test")
 
     )
    .ConfigureServices(services => {
@@ -57,37 +57,37 @@ logger.LogError(7, "Oops, there was an error.");  // Logs in ConsoleColor.DarkRe
 logger.LogTrace(5, "== 120.");                    // Not logged
 
 
-var test1 = host.Services.GetRequiredService<Test1>();
+//var test1 = host.Services.GetRequiredService<Test1>();
 
-var mc1 = host.Services.GetRequiredService<IMemoryCache>();
-var redisCache = host.Services.GetRequiredService<IDistributedCache>();
+//var mc1 = host.Services.GetRequiredService<IMemoryCache>();
+//var redisCache = host.Services.GetRequiredService<IDistributedCache>();
 
-while (true) {
-    var str = await mc1.GetOrCreateAsync<string>("connectionstr", (e) => {
-        e.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(2);
-        return Task.FromResult("localhost:27017 - " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-    });
+//while (true) {
+//    var str = await mc1.GetOrCreateAsync<string>("connectionstr", (e) => {
+//        e.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(2);
+//        return Task.FromResult("localhost:27017 - " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+//    });
 
 
-    var str2 = await redisCache.GetStringAsync("conStr");
-    var s1 = "not found";
-    if (str2 == null) {
-        s1 = "redis cache - " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        var opts = new DistributedCacheEntryOptions();
-        opts.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(20);
-        await redisCache.SetStringAsync("conStr", s1, opts);
-    }
-    else {
-        s1 = str2;
-    }
+//    var str2 = await redisCache.GetStringAsync("conStr");
+//    var s1 = "not found";
+//    if (str2 == null) {
+//        s1 = "redis cache - " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+//        var opts = new DistributedCacheEntryOptions();
+//        opts.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(20);
+//        await redisCache.SetStringAsync("conStr", s1, opts);
+//    }
+//    else {
+//        s1 = str2;
+//    }
    
 
-    Console.WriteLine($"string value: {str}, ---- {s1}");
-    test1.Test();
-    await Task.Delay(1000);
-}
+//    Console.WriteLine($"string value: {str}, ---- {s1}");
+//    test1.Test();
+//    await Task.Delay(1000);
+//}
 
-await host.RunAsync();
+ 
 
 //Console.WriteLine(new Secret().GetSecret());
 
